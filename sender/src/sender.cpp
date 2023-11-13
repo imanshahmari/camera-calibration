@@ -11,10 +11,10 @@
 #include "messages.hpp"
 
 
-#define INPUT_FILES "../data/calibration_input/*.jpg"
-#define OUTPUT_FILE "../data/calibration_output/calibresult.jpg"
-#define SAMPLE_FILE "../data/calibration_input/snapshot_2021_03_22_15_27_51.jpg"
-#define DRAW false
+#define INPUT_FILES "/data/calibration_input/*.jpg"
+#define OUTPUT_FILE "/data/calibration_output/calibresult.jpg"
+#define SAMPLE_FILE "/data/calibration_input/snapshot_2021_03_22_15_27_51.jpg"
+#define DRAW true
 
 
 
@@ -36,10 +36,10 @@ void getCalibrationMatrix(cv::Mat& mtx, cv::Mat& dist) {
     }
 
 
-    std::vector<std::string> images;
+    std::vector<cv::String> images;
     cv::glob(INPUT_FILES, images);
 
-    for (const std::string& fname : images) {
+    for (const cv::String& fname : images) {
         cv::Mat img = cv::imread(fname);
         cv::Mat gray;
         cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
@@ -65,25 +65,13 @@ void getCalibrationMatrix(cv::Mat& mtx, cv::Mat& dist) {
     }
 
     cv::Mat img2 = cv::imread(SAMPLE_FILE);
-    cv::Mat gray2;
-    cv::cvtColor(img2, gray2, cv::COLOR_BGR2GRAY);
-
     cv::Mat rvecs, tvecs;
-    bool ret = cv::calibrateCamera(objpoints, imgpoints, gray2.size(), mtx, dist, rvecs, tvecs);
+    bool ret = cv::calibrateCamera(objpoints, imgpoints, img2.size(), mtx, dist, rvecs, tvecs);
 
-    if (ret) {
-        cv::Mat dst;
-        cv::undistort(img2, dst, mtx, dist);
-        cv::imwrite(OUTPUT_FILE, dst);
-    }
-
-    // std::ofstream file("graphics/calibration_output/calibration_matrix.csv");
-    // if (file.is_open()) {
-    //     file << mtx.row(0) << std::endl;
-    //     file << mtx.row(1) << std::endl;
-    //     file << mtx.row(2) << std::endl;
-    //     file << dist.row(0) << std::endl;
-    //     file.close();
+    // if (ret) {
+    //     cv::Mat dst;
+    //     cv::undistort(img2, dst, mtx, dist);
+    //     cv::imwrite(OUTPUT_FILE, dst);
     // }
 
     std::cout << mtx.row(0) << std::endl;

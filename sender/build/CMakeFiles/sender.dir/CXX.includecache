@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/iman/cpp/sender/src/cluon-complete.hpp
+/home/iman/git/camera-calibration/sender/src/cluon-complete.hpp
 typeinfo
 -
 type_traits
@@ -826,7 +826,7 @@ sstream
 string
 -
 cluon-msc.hpp
-/home/iman/cpp/sender/src/cluon-msc.hpp
+/home/iman/git/camera-calibration/sender/src/cluon-msc.hpp
 cstdint
 -
 cstdint
@@ -844,7 +844,7 @@ string
 thread
 -
 cluon-replay.hpp
-/home/iman/cpp/sender/src/cluon-replay.hpp
+/home/iman/git/camera-calibration/sender/src/cluon-replay.hpp
 cstdint
 -
 chrono
@@ -868,7 +868,7 @@ string
 thread
 -
 cluon-livefeed.hpp
-/home/iman/cpp/sender/src/cluon-livefeed.hpp
+/home/iman/git/camera-calibration/sender/src/cluon-livefeed.hpp
 cstdint
 -
 algorithm
@@ -886,11 +886,11 @@ string
 thread
 -
 cluon-rec2csv.hpp
-/home/iman/cpp/sender/src/cluon-rec2csv.hpp
+/home/iman/git/camera-calibration/sender/src/cluon-rec2csv.hpp
 cstdint
 -
 
-/home/iman/cpp/sender/src/messages.hpp
+/home/iman/git/camera-calibration/sender/src/messages.hpp
 cstdint
 -
 string
@@ -908,7 +908,7 @@ string
 utility
 -
 
-/home/iman/cpp/sender/src/sender.cpp
+/home/iman/git/camera-calibration/sender/src/sender.cpp
 iostream
 -
 opencv2/opencv.hpp
@@ -926,9 +926,9 @@ string
 fstream
 -
 cluon-complete.hpp
-/home/iman/cpp/sender/src/cluon-complete.hpp
+/home/iman/git/camera-calibration/sender/src/cluon-complete.hpp
 messages.hpp
-/home/iman/cpp/sender/src/messages.hpp
+/home/iman/git/camera-calibration/sender/src/messages.hpp
 
 /usr/local/include/opencv4/opencv2/calib3d.hpp
 opencv2/core.hpp

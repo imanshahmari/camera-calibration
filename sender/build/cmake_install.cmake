@@ -1,4 +1,4 @@
-# Install script for directory: /home/iman/cpp/sender
+# Install script for directory: /home/iman/git/camera-calibration/sender
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/iman/cpp/sender/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/iman/git/camera-calibration/sender/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

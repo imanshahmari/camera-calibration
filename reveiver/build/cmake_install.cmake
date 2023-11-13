@@ -1,4 +1,4 @@
-# Install script for directory: /home/iman/cpp/reveiver
+# Install script for directory: /home/iman/git/camera-calibration/reveiver
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/iman/cpp/reveiver/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/iman/git/camera-calibration/reveiver/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

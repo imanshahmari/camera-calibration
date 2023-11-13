@@ -6,5 +6,5 @@ CXX_FLAGS =  -Wall -Wextra   -std=gnu++14
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -isystem /home/iman/cpp/reveiver/build 
+CXX_INCLUDES = -isystem /home/iman/git/camera-calibration/reveiver/build 
 

@@ -6,5 +6,5 @@ CXX_FLAGS =  -Wall -Wextra   -std=gnu++14
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -isystem /usr/local/include/opencv4 -isystem /home/iman/cpp/sender/build 
+CXX_INCLUDES = -isystem /usr/local/include/opencv4 -isystem /home/iman/git/camera-calibration/sender/build 
 

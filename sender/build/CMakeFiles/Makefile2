@@ -44,10 +44,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/iman/cpp/sender
+CMAKE_SOURCE_DIR = /home/iman/git/camera-calibration/sender
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/iman/cpp/sender/build
+CMAKE_BINARY_DIR = /home/iman/git/camera-calibration/sender/build
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -74,14 +74,14 @@ clean: CMakeFiles/sender.dir/clean
 CMakeFiles/sender.dir/all:
 	$(MAKE) -f CMakeFiles/sender.dir/build.make CMakeFiles/sender.dir/depend
 	$(MAKE) -f CMakeFiles/sender.dir/build.make CMakeFiles/sender.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/iman/cpp/sender/build/CMakeFiles --progress-num=1,2,3 "Built target sender"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/iman/git/camera-calibration/sender/build/CMakeFiles --progress-num=1,2,3 "Built target sender"
 .PHONY : CMakeFiles/sender.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/sender.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/iman/cpp/sender/build/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/iman/git/camera-calibration/sender/build/CMakeFiles 3
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/sender.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/iman/cpp/sender/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/iman/git/camera-calibration/sender/build/CMakeFiles 0
 .PHONY : CMakeFiles/sender.dir/rule
 
 # Convenience name for target.

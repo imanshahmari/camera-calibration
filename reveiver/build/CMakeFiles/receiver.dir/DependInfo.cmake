@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/iman/cpp/reveiver/receiver.cpp" "/home/iman/cpp/reveiver/build/CMakeFiles/receiver.dir/receiver.cpp.o"
+  "/home/iman/git/camera-calibration/reveiver/receiver.cpp" "/home/iman/git/camera-calibration/reveiver/build/CMakeFiles/receiver.dir/receiver.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
