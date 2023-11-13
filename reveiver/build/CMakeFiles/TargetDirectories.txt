@@ -1,0 +1,3 @@
+/home/iman/cpp/reveiver/build/CMakeFiles/rebuild_cache.dir
+/home/iman/cpp/reveiver/build/CMakeFiles/edit_cache.dir
+/home/iman/cpp/reveiver/build/CMakeFiles/receiver.dir

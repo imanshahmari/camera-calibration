@@ -1,0 +1,1 @@
+/usr/bin/c++   -Wall -Wextra  -rdynamic CMakeFiles/receiver.dir/receiver.cpp.o  -o receiver  -lpthread 
