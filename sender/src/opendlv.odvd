@@ -17,18 +17,19 @@
  */
 
 message calValues [id = 2001] {
-  double m00 [id = 1];
-  double m01 [id = 2];
-  double m02 [id = 3];
-  double m10 [id = 4];
-  double m11 [id = 5];
-  double m12 [id = 6];
-  double m20 [id = 7];
-  double m21 [id = 8];
-  double m22 [id = 9];
-  double d0 [id = 10];
-  double d1 [id = 11];
-  double d2 [id = 12];
-  double d3 [id = 13];
-  double d4 [id = 14];
+  int cameraId [id = 1];
+  double m00 [id = 2];
+  double m01 [id = 3];
+  double m02 [id = 4];
+  double m10 [id = 5];
+  double m11 [id = 6];
+  double m12 [id = 7];
+  double m20 [id = 8];
+  double m21 [id = 9];
+  double m22 [id = 10];
+  double d0 [id = 11];
+  double d1 [id = 12];
+  double d2 [id = 13];
+  double d3 [id = 14];
+  double d4 [id = 15];
 }

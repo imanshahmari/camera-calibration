@@ -125,6 +125,13 @@ class LIB_API calValues {
         ~calValues() = default;
 
     public:
+        inline calValues& cameraId(const int &v) noexcept {
+            m_cameraId = v;
+            return *this;
+        }
+        inline int cameraId() const noexcept {
+            return m_cameraId;
+        }
         inline calValues& m00(const double &v) noexcept {
             m_m00 = v;
             return *this;
@@ -231,59 +238,63 @@ class LIB_API calValues {
             (void)visitor;
 //            visitor.preVisit(ID(), ShortName(), LongName());
             if (1 == fieldId) {
-                doVisit(1, std::move("double"s), std::move("m00"s), m_m00, visitor);
+                doVisit(1, std::move("int"s), std::move("cameraId"s), m_cameraId, visitor);
                 return;
             }
             if (2 == fieldId) {
-                doVisit(2, std::move("double"s), std::move("m01"s), m_m01, visitor);
+                doVisit(2, std::move("double"s), std::move("m00"s), m_m00, visitor);
                 return;
             }
             if (3 == fieldId) {
-                doVisit(3, std::move("double"s), std::move("m02"s), m_m02, visitor);
+                doVisit(3, std::move("double"s), std::move("m01"s), m_m01, visitor);
                 return;
             }
             if (4 == fieldId) {
-                doVisit(4, std::move("double"s), std::move("m10"s), m_m10, visitor);
+                doVisit(4, std::move("double"s), std::move("m02"s), m_m02, visitor);
                 return;
             }
             if (5 == fieldId) {
-                doVisit(5, std::move("double"s), std::move("m11"s), m_m11, visitor);
+                doVisit(5, std::move("double"s), std::move("m10"s), m_m10, visitor);
                 return;
             }
             if (6 == fieldId) {
-                doVisit(6, std::move("double"s), std::move("m12"s), m_m12, visitor);
+                doVisit(6, std::move("double"s), std::move("m11"s), m_m11, visitor);
                 return;
             }
             if (7 == fieldId) {
-                doVisit(7, std::move("double"s), std::move("m20"s), m_m20, visitor);
+                doVisit(7, std::move("double"s), std::move("m12"s), m_m12, visitor);
                 return;
             }
             if (8 == fieldId) {
-                doVisit(8, std::move("double"s), std::move("m21"s), m_m21, visitor);
+                doVisit(8, std::move("double"s), std::move("m20"s), m_m20, visitor);
                 return;
             }
             if (9 == fieldId) {
-                doVisit(9, std::move("double"s), std::move("m22"s), m_m22, visitor);
+                doVisit(9, std::move("double"s), std::move("m21"s), m_m21, visitor);
                 return;
             }
             if (10 == fieldId) {
-                doVisit(10, std::move("double"s), std::move("d0"s), m_d0, visitor);
+                doVisit(10, std::move("double"s), std::move("m22"s), m_m22, visitor);
                 return;
             }
             if (11 == fieldId) {
-                doVisit(11, std::move("double"s), std::move("d1"s), m_d1, visitor);
+                doVisit(11, std::move("double"s), std::move("d0"s), m_d0, visitor);
                 return;
             }
             if (12 == fieldId) {
-                doVisit(12, std::move("double"s), std::move("d2"s), m_d2, visitor);
+                doVisit(12, std::move("double"s), std::move("d1"s), m_d1, visitor);
                 return;
             }
             if (13 == fieldId) {
-                doVisit(13, std::move("double"s), std::move("d3"s), m_d3, visitor);
+                doVisit(13, std::move("double"s), std::move("d2"s), m_d2, visitor);
                 return;
             }
             if (14 == fieldId) {
-                doVisit(14, std::move("double"s), std::move("d4"s), m_d4, visitor);
+                doVisit(14, std::move("double"s), std::move("d3"s), m_d3, visitor);
+                return;
+            }
+            if (15 == fieldId) {
+                doVisit(15, std::move("double"s), std::move("d4"s), m_d4, visitor);
                 return;
             }
 //            visitor.postVisit();
@@ -292,20 +303,21 @@ class LIB_API calValues {
         template<class Visitor>
         inline void accept(Visitor &visitor) {
             visitor.preVisit(ID(), ShortName(), LongName());
-            doVisit(1, std::move("double"s), std::move("m00"s), m_m00, visitor);
-            doVisit(2, std::move("double"s), std::move("m01"s), m_m01, visitor);
-            doVisit(3, std::move("double"s), std::move("m02"s), m_m02, visitor);
-            doVisit(4, std::move("double"s), std::move("m10"s), m_m10, visitor);
-            doVisit(5, std::move("double"s), std::move("m11"s), m_m11, visitor);
-            doVisit(6, std::move("double"s), std::move("m12"s), m_m12, visitor);
-            doVisit(7, std::move("double"s), std::move("m20"s), m_m20, visitor);
-            doVisit(8, std::move("double"s), std::move("m21"s), m_m21, visitor);
-            doVisit(9, std::move("double"s), std::move("m22"s), m_m22, visitor);
-            doVisit(10, std::move("double"s), std::move("d0"s), m_d0, visitor);
-            doVisit(11, std::move("double"s), std::move("d1"s), m_d1, visitor);
-            doVisit(12, std::move("double"s), std::move("d2"s), m_d2, visitor);
-            doVisit(13, std::move("double"s), std::move("d3"s), m_d3, visitor);
-            doVisit(14, std::move("double"s), std::move("d4"s), m_d4, visitor);
+            doVisit(1, std::move("int"s), std::move("cameraId"s), m_cameraId, visitor);
+            doVisit(2, std::move("double"s), std::move("m00"s), m_m00, visitor);
+            doVisit(3, std::move("double"s), std::move("m01"s), m_m01, visitor);
+            doVisit(4, std::move("double"s), std::move("m02"s), m_m02, visitor);
+            doVisit(5, std::move("double"s), std::move("m10"s), m_m10, visitor);
+            doVisit(6, std::move("double"s), std::move("m11"s), m_m11, visitor);
+            doVisit(7, std::move("double"s), std::move("m12"s), m_m12, visitor);
+            doVisit(8, std::move("double"s), std::move("m20"s), m_m20, visitor);
+            doVisit(9, std::move("double"s), std::move("m21"s), m_m21, visitor);
+            doVisit(10, std::move("double"s), std::move("m22"s), m_m22, visitor);
+            doVisit(11, std::move("double"s), std::move("d0"s), m_d0, visitor);
+            doVisit(12, std::move("double"s), std::move("d1"s), m_d1, visitor);
+            doVisit(13, std::move("double"s), std::move("d2"s), m_d2, visitor);
+            doVisit(14, std::move("double"s), std::move("d3"s), m_d3, visitor);
+            doVisit(15, std::move("double"s), std::move("d4"s), m_d4, visitor);
             visitor.postVisit();
         }
 
@@ -313,38 +325,40 @@ class LIB_API calValues {
         inline void accept(PreVisitor &&preVisit, Visitor &&visit, PostVisitor &&postVisit) {
             (void)visit; // Prevent warnings from empty messages.
             std::forward<PreVisitor>(preVisit)(ID(), ShortName(), LongName());
-            doTripletForwardVisit(1, std::move("double"s), std::move("m00"s), m_m00, preVisit, visit, postVisit);
-            doTripletForwardVisit(2, std::move("double"s), std::move("m01"s), m_m01, preVisit, visit, postVisit);
-            doTripletForwardVisit(3, std::move("double"s), std::move("m02"s), m_m02, preVisit, visit, postVisit);
-            doTripletForwardVisit(4, std::move("double"s), std::move("m10"s), m_m10, preVisit, visit, postVisit);
-            doTripletForwardVisit(5, std::move("double"s), std::move("m11"s), m_m11, preVisit, visit, postVisit);
-            doTripletForwardVisit(6, std::move("double"s), std::move("m12"s), m_m12, preVisit, visit, postVisit);
-            doTripletForwardVisit(7, std::move("double"s), std::move("m20"s), m_m20, preVisit, visit, postVisit);
-            doTripletForwardVisit(8, std::move("double"s), std::move("m21"s), m_m21, preVisit, visit, postVisit);
-            doTripletForwardVisit(9, std::move("double"s), std::move("m22"s), m_m22, preVisit, visit, postVisit);
-            doTripletForwardVisit(10, std::move("double"s), std::move("d0"s), m_d0, preVisit, visit, postVisit);
-            doTripletForwardVisit(11, std::move("double"s), std::move("d1"s), m_d1, preVisit, visit, postVisit);
-            doTripletForwardVisit(12, std::move("double"s), std::move("d2"s), m_d2, preVisit, visit, postVisit);
-            doTripletForwardVisit(13, std::move("double"s), std::move("d3"s), m_d3, preVisit, visit, postVisit);
-            doTripletForwardVisit(14, std::move("double"s), std::move("d4"s), m_d4, preVisit, visit, postVisit);
+            doTripletForwardVisit(1, std::move("int"s), std::move("cameraId"s), m_cameraId, preVisit, visit, postVisit);
+            doTripletForwardVisit(2, std::move("double"s), std::move("m00"s), m_m00, preVisit, visit, postVisit);
+            doTripletForwardVisit(3, std::move("double"s), std::move("m01"s), m_m01, preVisit, visit, postVisit);
+            doTripletForwardVisit(4, std::move("double"s), std::move("m02"s), m_m02, preVisit, visit, postVisit);
+            doTripletForwardVisit(5, std::move("double"s), std::move("m10"s), m_m10, preVisit, visit, postVisit);
+            doTripletForwardVisit(6, std::move("double"s), std::move("m11"s), m_m11, preVisit, visit, postVisit);
+            doTripletForwardVisit(7, std::move("double"s), std::move("m12"s), m_m12, preVisit, visit, postVisit);
+            doTripletForwardVisit(8, std::move("double"s), std::move("m20"s), m_m20, preVisit, visit, postVisit);
+            doTripletForwardVisit(9, std::move("double"s), std::move("m21"s), m_m21, preVisit, visit, postVisit);
+            doTripletForwardVisit(10, std::move("double"s), std::move("m22"s), m_m22, preVisit, visit, postVisit);
+            doTripletForwardVisit(11, std::move("double"s), std::move("d0"s), m_d0, preVisit, visit, postVisit);
+            doTripletForwardVisit(12, std::move("double"s), std::move("d1"s), m_d1, preVisit, visit, postVisit);
+            doTripletForwardVisit(13, std::move("double"s), std::move("d2"s), m_d2, preVisit, visit, postVisit);
+            doTripletForwardVisit(14, std::move("double"s), std::move("d3"s), m_d3, preVisit, visit, postVisit);
+            doTripletForwardVisit(15, std::move("double"s), std::move("d4"s), m_d4, preVisit, visit, postVisit);
             std::forward<PostVisitor>(postVisit)();
         }
 
     private:
-        double m_m00{ 0.0 }; // field identifier = 1.
-        double m_m01{ 0.0 }; // field identifier = 2.
-        double m_m02{ 0.0 }; // field identifier = 3.
-        double m_m10{ 0.0 }; // field identifier = 4.
-        double m_m11{ 0.0 }; // field identifier = 5.
-        double m_m12{ 0.0 }; // field identifier = 6.
-        double m_m20{ 0.0 }; // field identifier = 7.
-        double m_m21{ 0.0 }; // field identifier = 8.
-        double m_m22{ 0.0 }; // field identifier = 9.
-        double m_d0{ 0.0 }; // field identifier = 10.
-        double m_d1{ 0.0 }; // field identifier = 11.
-        double m_d2{ 0.0 }; // field identifier = 12.
-        double m_d3{ 0.0 }; // field identifier = 13.
-        double m_d4{ 0.0 }; // field identifier = 14.
+        int m_cameraId{  }; // field identifier = 1.
+        double m_m00{ 0.0 }; // field identifier = 2.
+        double m_m01{ 0.0 }; // field identifier = 3.
+        double m_m02{ 0.0 }; // field identifier = 4.
+        double m_m10{ 0.0 }; // field identifier = 5.
+        double m_m11{ 0.0 }; // field identifier = 6.
+        double m_m12{ 0.0 }; // field identifier = 7.
+        double m_m20{ 0.0 }; // field identifier = 8.
+        double m_m21{ 0.0 }; // field identifier = 9.
+        double m_m22{ 0.0 }; // field identifier = 10.
+        double m_d0{ 0.0 }; // field identifier = 11.
+        double m_d1{ 0.0 }; // field identifier = 12.
+        double m_d2{ 0.0 }; // field identifier = 13.
+        double m_d3{ 0.0 }; // field identifier = 14.
+        double m_d4{ 0.0 }; // field identifier = 15.
 };
 
 

@@ -39,4 +39,4 @@ RUN apt-get update && \
 
 WORKDIR /opt/sender
 COPY --from=builder /tmp/sender .
-CMD ["./sender"]
+CMD ["./sender", "--verbose"]
