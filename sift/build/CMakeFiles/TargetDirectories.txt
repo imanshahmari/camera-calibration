@@ -1,0 +1,3 @@
+/home/iman/git/camera-calibration/sift/build/CMakeFiles/rebuild_cache.dir
+/home/iman/git/camera-calibration/sift/build/CMakeFiles/edit_cache.dir
+/home/iman/git/camera-calibration/sift/build/CMakeFiles/sift-detector.dir

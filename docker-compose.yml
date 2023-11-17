@@ -1,13 +1,27 @@
 version: "3"
 services:
-  sender:
+  # sender:
+  #   build:
+  #     context: ./sender
+  #   container_name: sender
+  #   tty: true
+  #   stdin_open: true
+  #   network_mode: host
+  #   volumes:
+  #     - ./sender/data:/data
+  #   environment:
+  #     - DISPLAY=:0
+
+
+  sift-detector:
     build:
-      context: ./sender
-    container_name: sender
+      context: ./sift
+    container_name: sift
     tty: true
     stdin_open: true
     network_mode: host
     volumes:
-      - ./sender/data:/data
+      - ./sift/data:/data
+      - /temp:/temp
     environment:
       - DISPLAY=:0
