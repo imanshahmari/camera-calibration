@@ -11,7 +11,8 @@
 #include "messages.hpp"
 
 #define INPUT_FILES_INTRINSIC "../../data/intrinsic-input/sample-camera/*.jpg"
-#define INPUT_FILES_EXTRINSIC "../../data/extrinsic-input/*.jpg"
+#define INPUT_IMAGE_LEFT "../../data/extrinsic-input/snapshot_2021_03_22_15_27_45.jpg"
+#define INPUT_IMAGE_RIGHT "../../data/extrinsic-input/snapshot_2021_03_22_15_27_51.jpg"
 
 bool VERBOSE = false;
 
@@ -20,19 +21,24 @@ struct IntrinsicParameters {
     cv::Mat distortionCoefficients;
 };
 
+struct ExtrintsicParameters {
+    cv::Mat rotationMatrix;
+    cv::Mat translationMatrix;
+};
+
 IntrinsicParameters getIntrinsicParameters() {
 
     // TODO using this for subpix accuracy also so float accuracy?
     cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.001);
 
-    int CHECKERBOARD[2]{6, 9};
+    cv::Size checkerboard = cv::Size(6, 9);
 
-    std::vector<std::vector<cv::Point3f>> objpoints;
-    std::vector<std::vector<cv::Point2f>> imgpoints;
+    std::vector<std::vector<cv::Point3f>> objPoints;
+    std::vector<std::vector<cv::Point2f>> imgPoints;
 
     std::vector<cv::Point3f> objp;
-    for (int i{0}; i < CHECKERBOARD[1]; i++) {
-        for (int j{0}; j < CHECKERBOARD[0]; j++)
+    for (int i{0}; i < checkerboard.height; i++) {
+        for (int j{0}; j < checkerboard.width; j++)
             objp.push_back(cv::Point3f(j, i, 0));
     }
 
@@ -45,17 +51,18 @@ IntrinsicParameters getIntrinsicParameters() {
         cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
 
         std::vector<cv::Point2f> corners;
-        bool ret = cv::findChessboardCorners(gray, cv::Size(CHECKERBOARD[0], CHECKERBOARD[1]), corners);
+        bool ret = cv::findChessboardCorners(gray, checkerboard, corners);
 
         if (ret) {
             if(VERBOSE){
                 std::cout << fname << std::endl;
             }
-            objpoints.push_back(objp);
-            imgpoints.push_back(corners);
+
+            objPoints.push_back(objp);
+            imgPoints.push_back(corners);
 
             if (VERBOSE) {
-                cv::drawChessboardCorners(img, cv::Size(9, 6), corners, ret);
+                cv::drawChessboardCorners(img, checkerboard, corners, ret);
                 cv::resize(img, img, cv::Size(1152, 864));
                 cv::imshow("img", img);
                 cv::waitKey(0);
@@ -64,9 +71,9 @@ IntrinsicParameters getIntrinsicParameters() {
         }
     }
 
-    cv::Mat img2 = cv::imread(images[0]);
+    cv::Mat sampleImg = cv::imread(images[0]);
     cv::Mat mtx,dist,rvecs, tvecs;
-    float ret = cv::calibrateCamera(objpoints, imgpoints, img2.size(), mtx, dist, rvecs, tvecs, 0, criteria);
+    float ret = cv::calibrateCamera(objPoints, imgPoints, sampleImg.size(), mtx, dist, rvecs, tvecs, 0, criteria);
     std::cout << "RMSE:" << ret << std::endl;
 
     if (VERBOSE) {
@@ -76,13 +83,77 @@ IntrinsicParameters getIntrinsicParameters() {
         std::cout << dist.row(0) << std::endl;
     }
 
-    // Create an instance of the IntrinsicParameters struct and assign the matrices
     IntrinsicParameters result;
-    result.cameraMatrix = mtx.clone(); // Assuming mtx is the camera matrix
-    result.distortionCoefficients = dist.clone(); // Assuming dist is the distortion coefficients
+    result.cameraMatrix = mtx.clone(); 
+    result.distortionCoefficients = dist.clone();
 
     return result;
 }
+
+
+void getExtrinsicParameters(IntrinsicParameters parametersLeft, IntrinsicParameters parametersRight){
+
+    cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 100, 0.0001);
+    cv::Size checkerboard = cv::Size(6, 9);
+
+    std::vector<std::vector<cv::Point3f>> objPoints;
+    std::vector<std::vector<cv::Point2f>> imgPointsLeft;
+    std::vector<std::vector<cv::Point2f>> imgPointsRight;
+
+    std::vector<cv::Point3f> objp;
+    for (int i{0}; i < checkerboard.height; i++) {
+        for (int j{0}; j < checkerboard.width; j++)
+            objp.push_back(cv::Point3f(j, i, 0));
+    }
+
+    //TODO should have more frames for left and right camera at (they should be synced)
+    cv::Mat imgLeft,imgLeftGray,imgRight,imgRightGray;
+
+    imgLeft = cv::imread(INPUT_IMAGE_LEFT);
+    imgRight = cv::imread(INPUT_IMAGE_RIGHT);
+
+    cv::cvtColor(imgLeft, imgLeftGray, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(imgRight, imgRightGray, cv::COLOR_BGR2GRAY);
+
+
+    std::vector<cv::Point2f> cornersLeftImg,cornersRightImg;
+
+    bool retLeft = cv::findChessboardCorners(imgLeftGray, checkerboard, cornersLeftImg);   
+    bool retRight = cv::findChessboardCorners(imgRightGray, checkerboard, cornersRightImg);
+
+
+    if (retLeft && retRight) {
+
+        objPoints.push_back(objp);
+
+        imgPointsLeft.push_back(cornersLeftImg);
+        imgPointsRight.push_back(cornersRightImg);
+
+        std::cout << "detected corners in left and right images" << std::endl;
+
+        // cv::drawChessboardCorners(img, checkerboard, corners, ret);
+        // cv::resize(img, img, cv::Size(1152, 864));
+        // cv::imshow("img", img);
+        // cv::waitKey(0);
+        // cv::destroyAllWindows();
+    }
+
+    int flag = cv::CALIB_FIX_INTRINSIC;
+    cv::Mat R, T, E, F,rvecs, tvecs, perViewErrors;
+
+    double ret = cv::stereoCalibrate(
+        objPoints, imgPointsLeft, imgPointsRight,
+        parametersLeft.cameraMatrix, parametersLeft.distortionCoefficients,
+        parametersRight.cameraMatrix, parametersRight.distortionCoefficients,
+        imgLeft.size(), R, T, E, F, rvecs, tvecs, perViewErrors, flag,criteria
+        );
+
+    std::cout << "RMSE for stereo calibration:" << ret << std::endl;
+    std::cout << "Rotation Matrix R:\n" << R << "\nTranslation Matrix T:\n" << T << std::endl;
+}
+
+
+
 
 void sendDataoverOD4(cluon::OD4Session &od4,cv::Mat &mtx, cv::Mat &dist, int id){
     calValues msg;
@@ -114,6 +185,8 @@ int main(int argc, char *argv[]) {
 
     IntrinsicParameters parameters1;
     parameters1 = getIntrinsicParameters();
+
+    getExtrinsicParameters(parameters1,parameters1);
 
 
     cv::Mat mtx = parameters1.cameraMatrix;
