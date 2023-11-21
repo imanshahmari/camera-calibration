@@ -6,13 +6,15 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <future>
+
 
 #include "cluon-complete.hpp"
 #include "messages.hpp"
 
-#define INPUT_FILES_INTRINSIC "../../data/intrinsic-input/sample-camera/*.jpg"
-#define INPUT_IMAGE_LEFT "../../data/extrinsic-input/snapshot_2021_03_22_15_27_45.jpg"
-#define INPUT_IMAGE_RIGHT "../../data/extrinsic-input/snapshot_2021_03_22_15_27_51.jpg"
+#define INPUT_FILES_INTRINSIC "../../data/intrinsic-input/example-1/*.jpg"
+#define INPUT_IMAGE_LEFT "../../data/extrinsic-input/example-1/snapshot_2021_03_22_15_27_45.jpg"
+#define INPUT_IMAGE_RIGHT "../../data/extrinsic-input/example-1/snapshot_2021_03_22_15_27_51.jpg"
 
 bool VERBOSE = false;
 
@@ -28,7 +30,7 @@ struct ExtrintsicParameters {
 
 IntrinsicParameters getIntrinsicParameters() {
 
-    // TODO using this for subpix accuracy also so float accuracy?
+    // TODO using this for subpix accuracy also (float accuracy)?
     cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.001);
 
     cv::Size checkerboard = cv::Size(6, 9);
@@ -51,7 +53,8 @@ IntrinsicParameters getIntrinsicParameters() {
         cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
 
         std::vector<cv::Point2f> corners;
-        bool ret = cv::findChessboardCorners(gray, checkerboard, corners);
+        bool ret = cv::findChessboardCorners(gray, checkerboard, corners,
+            cv::CALIB_CB_FAST_CHECK);
 
         if (ret) {
             if(VERBOSE){
@@ -73,8 +76,9 @@ IntrinsicParameters getIntrinsicParameters() {
 
     cv::Mat sampleImg = cv::imread(images[0]);
     cv::Mat mtx,dist,rvecs, tvecs;
+
     float ret = cv::calibrateCamera(objPoints, imgPoints, sampleImg.size(), mtx, dist, rvecs, tvecs, 0, criteria);
-    std::cout << "RMSE:" << ret << std::endl;
+    std::cout << "RMSE for single camera calibration:" << ret << std::endl;
 
     if (VERBOSE) {
         std::cout << mtx.row(0) << std::endl;
@@ -106,7 +110,7 @@ void getExtrinsicParameters(IntrinsicParameters parametersLeft, IntrinsicParamet
             objp.push_back(cv::Point3f(j, i, 0));
     }
 
-    //TODO should have more frames for left and right camera at (they should be synced)
+    //TODO should have more frames for left and right camera (they should be synced)
     cv::Mat imgLeft,imgLeftGray,imgRight,imgRightGray;
 
     imgLeft = cv::imread(INPUT_IMAGE_LEFT);
@@ -129,8 +133,6 @@ void getExtrinsicParameters(IntrinsicParameters parametersLeft, IntrinsicParamet
         imgPointsLeft.push_back(cornersLeftImg);
         imgPointsRight.push_back(cornersRightImg);
 
-        std::cout << "detected corners in left and right images" << std::endl;
-
         // cv::drawChessboardCorners(img, checkerboard, corners, ret);
         // cv::resize(img, img, cv::Size(1152, 864));
         // cv::imshow("img", img);
@@ -145,18 +147,23 @@ void getExtrinsicParameters(IntrinsicParameters parametersLeft, IntrinsicParamet
         objPoints, imgPointsLeft, imgPointsRight,
         parametersLeft.cameraMatrix, parametersLeft.distortionCoefficients,
         parametersRight.cameraMatrix, parametersRight.distortionCoefficients,
-        imgLeft.size(), R, T, E, F, rvecs, tvecs, perViewErrors, flag,criteria
+        imgLeft.size(), R, T, E, F, rvecs, tvecs, perViewErrors, flag, criteria
         );
 
     std::cout << "RMSE for stereo calibration:" << ret << std::endl;
-    std::cout << "Rotation Matrix R:\n" << R << "\nTranslation Matrix T:\n" << T << std::endl;
+    if(VERBOSE){
+        std::cout << "Rotation Matrix R:\n" << R << "\nTranslation Matrix T:\n" << T << std::endl;
+    }
 }
 
 
 
-
-void sendDataoverOD4(cluon::OD4Session &od4,cv::Mat &mtx, cv::Mat &dist, int id){
+void sendDataoverOD4(cluon::OD4Session &od4,IntrinsicParameters parameters, int id){
     calValues msg;
+
+    cv::Mat mtx = parameters.cameraMatrix;
+    cv::Mat dist = parameters.distortionCoefficients;
+
     msg.cameraId(id);
     msg.m00(mtx.row(0).at<double>(0));
     msg.m01(mtx.row(0).at<double>(1));
@@ -181,17 +188,13 @@ int main(int argc, char *argv[]) {
         VERBOSE = true;
     }
 
-    // cluon::OD4Session od4(132, [](cluon::data::Envelope &&envelope) noexcept {});
+    cluon::OD4Session od4(132, [](cluon::data::Envelope &&envelope) noexcept {});
 
     IntrinsicParameters parameters1;
     parameters1 = getIntrinsicParameters();
+    sendDataoverOD4(od4, parameters1, 1);
 
     getExtrinsicParameters(parameters1,parameters1);
-
-
-    cv::Mat mtx = parameters1.cameraMatrix;
-
-    // sendDataoverOD4(od4, mtx, dist, 1);
 
     return 0;
 }

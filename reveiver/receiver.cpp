@@ -26,11 +26,11 @@ int32_t main(int32_t , char **)
                                       receivedMsg.m10(), receivedMsg.m11(), receivedMsg.m12(),
                                       receivedMsg.m20(), receivedMsg.m21(), receivedMsg.m22());
 
-            std::cout << "Received Matrix:\n" << receivedMatrix << "\n";
+            std::cout << "Received Camera Matrix:\n" << receivedMatrix << "\n";
 
             cv::Mat receivedVector = (cv::Mat_<double>(1, 5) << receivedMsg.d0(), receivedMsg.d1(), receivedMsg.d2(), receivedMsg.d3(), receivedMsg.d4());
 
-            std::cout << "Received Vector:\n" << receivedVector << "\n";
+            std::cout << "Received Distortion Vector:\n" << receivedVector << "\n";
         }
     });
 
