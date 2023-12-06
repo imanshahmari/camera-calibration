@@ -12,11 +12,14 @@
 #include "cluon-complete.hpp"
 #include "messages.hpp"
 
-#define INPUT_FILES_INTRINSIC "../../data/intrinsic-input/example-1/*.jpg"
-#define INPUT_IMAGE_LEFT "../../data/extrinsic-input/example-1/snapshot_2021_03_22_15_27_45.jpg"
-#define INPUT_IMAGE_RIGHT "../../data/extrinsic-input/example-1/snapshot_2021_03_22_15_27_51.jpg"
+#define INPUT_FILES_INTRINSIC "../../data/intrinsic-input/example-3/*.jpg"
+#define INPUT_IMAGE_LEFT "../../data/extrinsic-input/example-3/IMG_20231205_112306.jpg"
+#define INPUT_IMAGE_RIGHT "../../data/extrinsic-input/example-3/IMG_20231205_112347.jpg"
+
 
 bool VERBOSE = false;
+cv::Size CHECKER_BOARD = cv::Size(4, 7);
+
 
 struct IntrinsicParameters {
     cv::Mat cameraMatrix;
@@ -33,14 +36,12 @@ IntrinsicParameters getIntrinsicParameters() {
     // TODO using this for subpix accuracy also (float accuracy)?
     cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.001);
 
-    cv::Size checkerboard = cv::Size(6, 9);
-
     std::vector<std::vector<cv::Point3f>> objPoints;
     std::vector<std::vector<cv::Point2f>> imgPoints;
 
     std::vector<cv::Point3f> objp;
-    for (int i{0}; i < checkerboard.height; i++) {
-        for (int j{0}; j < checkerboard.width; j++)
+    for (int i{0}; i < CHECKER_BOARD.height; i++) {
+        for (int j{0}; j < CHECKER_BOARD.width; j++)
             objp.push_back(cv::Point3f(j, i, 0));
     }
 
@@ -53,7 +54,7 @@ IntrinsicParameters getIntrinsicParameters() {
         cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
 
         std::vector<cv::Point2f> corners;
-        bool ret = cv::findChessboardCorners(gray, checkerboard, corners,
+        bool ret = cv::findChessboardCorners(gray, CHECKER_BOARD, corners,
             cv::CALIB_CB_FAST_CHECK);
 
         if (ret) {
@@ -65,7 +66,7 @@ IntrinsicParameters getIntrinsicParameters() {
             imgPoints.push_back(corners);
 
             if (VERBOSE) {
-                cv::drawChessboardCorners(img, checkerboard, corners, ret);
+                cv::drawChessboardCorners(img, CHECKER_BOARD, corners, ret);
                 cv::resize(img, img, cv::Size(1152, 864));
                 cv::imshow("img", img);
                 cv::waitKey(0);
@@ -98,15 +99,14 @@ IntrinsicParameters getIntrinsicParameters() {
 void getExtrinsicParameters(IntrinsicParameters parametersLeft, IntrinsicParameters parametersRight){
 
     cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 100, 0.0001);
-    cv::Size checkerboard = cv::Size(6, 9);
 
     std::vector<std::vector<cv::Point3f>> objPoints;
     std::vector<std::vector<cv::Point2f>> imgPointsLeft;
     std::vector<std::vector<cv::Point2f>> imgPointsRight;
 
     std::vector<cv::Point3f> objp;
-    for (int i{0}; i < checkerboard.height; i++) {
-        for (int j{0}; j < checkerboard.width; j++)
+    for (int i{0}; i < CHECKER_BOARD.height; i++) {
+        for (int j{0}; j < CHECKER_BOARD.width; j++)
             objp.push_back(cv::Point3f(j, i, 0));
     }
 
@@ -122,8 +122,8 @@ void getExtrinsicParameters(IntrinsicParameters parametersLeft, IntrinsicParamet
 
     std::vector<cv::Point2f> cornersLeftImg,cornersRightImg;
 
-    bool retLeft = cv::findChessboardCorners(imgLeftGray, checkerboard, cornersLeftImg);   
-    bool retRight = cv::findChessboardCorners(imgRightGray, checkerboard, cornersRightImg);
+    bool retLeft = cv::findChessboardCorners(imgLeftGray, CHECKER_BOARD, cornersLeftImg);   
+    bool retRight = cv::findChessboardCorners(imgRightGray, CHECKER_BOARD, cornersRightImg);
 
 
     if (retLeft && retRight) {
@@ -132,12 +132,6 @@ void getExtrinsicParameters(IntrinsicParameters parametersLeft, IntrinsicParamet
 
         imgPointsLeft.push_back(cornersLeftImg);
         imgPointsRight.push_back(cornersRightImg);
-
-        // cv::drawChessboardCorners(img, checkerboard, corners, ret);
-        // cv::resize(img, img, cv::Size(1152, 864));
-        // cv::imshow("img", img);
-        // cv::waitKey(0);
-        // cv::destroyAllWindows();
     }
 
     int flag = cv::CALIB_FIX_INTRINSIC;
@@ -150,8 +144,12 @@ void getExtrinsicParameters(IntrinsicParameters parametersLeft, IntrinsicParamet
         imgLeft.size(), R, T, E, F, rvecs, tvecs, perViewErrors, flag, criteria
         );
 
+
+
+
     std::cout << "RMSE for stereo calibration:" << ret << std::endl;
     if(VERBOSE){
+        std::cout << "Essential Matrix E:" << E
         std::cout << "Rotation Matrix R:\n" << R << "\nTranslation Matrix T:\n" << T << std::endl;
     }
 }

@@ -1,3 +1,0 @@
-/home/iman/git/camera-calibration/sender/build/CMakeFiles/rebuild_cache.dir
-/home/iman/git/camera-calibration/sender/build/CMakeFiles/edit_cache.dir
-/home/iman/git/camera-calibration/sender/build/CMakeFiles/sender.dir
