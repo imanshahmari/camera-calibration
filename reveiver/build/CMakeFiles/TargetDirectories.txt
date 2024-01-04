@@ -1,3 +1,0 @@
-/home/iman/git/camera-calibration/reveiver/build/CMakeFiles/rebuild_cache.dir
-/home/iman/git/camera-calibration/reveiver/build/CMakeFiles/edit_cache.dir
-/home/iman/git/camera-calibration/reveiver/build/CMakeFiles/receiver.dir
