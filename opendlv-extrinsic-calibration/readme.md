@@ -1,0 +1,1 @@
+sudo docker run -it -v /tmp/.X11-unix:/tmp/.X11-unix -v ./data:/data -e DISPLAY=$DISPLAY intrinsic_calibration /opt/intrinsic/intrinsic -imagesdir /data/0/flir-2 -outputyaml /data/0/intrinsics.yml -checkersize 4 7 --verbose
