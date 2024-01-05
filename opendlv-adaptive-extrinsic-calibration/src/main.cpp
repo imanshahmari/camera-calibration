@@ -12,9 +12,6 @@
 #include "cluon-complete.hpp"
 #include "messages.hpp"
 
-bool VERBOSE = false;
-bool FAST = false;
-
 
 struct IntrinsicParameters {
     cv::Mat cameraMatrix;
@@ -23,18 +20,23 @@ struct IntrinsicParameters {
 };
 
 struct ExtrinsicParameters {
-    cv::Mat R;
-    cv::Mat T;
-    int cameraId;
+    cv::Mat rotationMatrix;
+    cv::Mat translationVector;
 };
+
 
 struct CommandLineOptions {
     std::string dir1;           
     std::string dir2;
+    std::string writeDest;
     float threshold;
     int k;
+    bool verbose;
+    bool sift;
+    bool send;
+    int od4;
 
-    CommandLineOptions() : threshold(0.25), k(3) {}
+    CommandLineOptions() : threshold(0.35), k(3), verbose(false), sift(false), send(false),od4(132){}
 };
 
 
@@ -45,9 +47,11 @@ CommandLineOptions parseCommandLine(int argc, char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--verbose") {
-            VERBOSE = true;
-        }else if (arg == "--fast") {
-            FAST = true;
+            options.verbose = true;
+        }else if (arg == "--send") {
+            options.send = true;
+        }else if (arg == "--sift") {
+            options.sift = true;
         }else if (arg == "-dir1") {
             options.dir1 = argv[++i];
         }else if (arg == "-dir2") {
@@ -56,6 +60,10 @@ CommandLineOptions parseCommandLine(int argc, char *argv[]) {
             options.threshold = std::stof(argv[++i]);
         }else if (arg == "-k") {
             options.k = std::stoi(argv[++i]);
+        }else if (arg == "-write") {
+            options.writeDest = argv[++i];;
+        }else if (arg == "-od4") {
+            options.od4 = std::stoi(argv[++i]);
         }
     }
 
@@ -66,17 +74,15 @@ CommandLineOptions parseCommandLine(int argc, char *argv[]) {
 void writeYAML(const std::string& filename, const ExtrinsicParameters& parameters) {
     YAML::Node node;
 
-    node["camera_id"] = parameters.cameraId;
-
     std::vector<double> rData;
-    cv::Mat RFlattened = parameters.R.reshape(1, 1);
+    cv::Mat RFlattened = parameters.rotationMatrix.reshape(1, 1);
     rData.assign(RFlattened.begin<double>(), RFlattened.end<double>());
     node["rotation_matrix"] = rData;
 
     std::vector<double> tData;
-    cv::Mat TFlattened = parameters.T.reshape(1, 1);
+    cv::Mat TFlattened = parameters.translationVector.reshape(1, 1);
     tData.assign(TFlattened.begin<double>(), TFlattened.end<double>());
-    node["translation_vector"] = tData;
+    node["translation_vector_normalized"] = tData;
 
     try {
         std::ofstream fout(filename);
@@ -115,6 +121,7 @@ std::string detectSingleImageType(const std::string& dirPath) {
 
 
 std::vector<std::pair<std::string, std::string>> pairImages(const std::string& folderPath1, const std::string& folderPath2) {
+    
     std::string imageType = detectSingleImageType(folderPath1);
 
     std::vector<cv::String> leftFiles, rightFiles;
@@ -177,8 +184,8 @@ IntrinsicParameters readYAML(const std::string& dirPath) {
 }
 
 
-void performSIFTMatching(std::vector<cv::KeyPoint>& keypoints1, std::vector<cv::KeyPoint>& keypoints2,const cv::Mat& img1, const cv::Mat& img2, const double ratio_thresh,
-                         std::vector<cv::DMatch>& good_matches, int k) {
+void performSIFTMatching(std::vector<cv::KeyPoint>& keypoints1, std::vector<cv::KeyPoint>& keypoints2,const cv::Mat& img1, const cv::Mat& img2,
+    std::vector<cv::DMatch>& good_matches, CommandLineOptions options) {
     cv::Ptr<cv::SIFT> sift = cv::SIFT::create();
     cv::Mat descriptors1, descriptors2;
 
@@ -187,15 +194,15 @@ void performSIFTMatching(std::vector<cv::KeyPoint>& keypoints1, std::vector<cv::
 
     cv::FlannBasedMatcher matcher;
     std::vector<std::vector<cv::DMatch>> knn_matches;
-    matcher.knnMatch(descriptors1, descriptors2, knn_matches, k);
+    matcher.knnMatch(descriptors1, descriptors2, knn_matches, options.k);
 
     for (size_t i = 0; i < knn_matches.size(); i++) {
-        if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance) {
+        if (knn_matches[i][0].distance < options.threshold * knn_matches[i][1].distance) {
             good_matches.push_back(knn_matches[i][0]);
         }
     }
 
-    if(VERBOSE){
+    if(options.verbose){
         cv::Mat img_matches;
         cv::drawMatches(img1, keypoints1, img2, keypoints2, good_matches, img_matches);
 
@@ -208,8 +215,9 @@ void performSIFTMatching(std::vector<cv::KeyPoint>& keypoints1, std::vector<cv::
     }
 }
 
-void performORBMatching(std::vector<cv::KeyPoint>& keypoints1, std::vector<cv::KeyPoint>& keypoints2,const cv::Mat& img1, const cv::Mat& img2, const double ratio_thresh,
-                        std::vector<cv::DMatch>& good_matches, int k) {
+void performORBMatching(std::vector<cv::KeyPoint>& keypoints1, std::vector<cv::KeyPoint>& keypoints2,const cv::Mat& img1, const cv::Mat& img2,
+    std::vector<cv::DMatch>& good_matches, CommandLineOptions options) {
+
     cv::Ptr<cv::ORB> orb = cv::ORB::create();
     cv::Mat descriptors1, descriptors2;
 
@@ -218,15 +226,15 @@ void performORBMatching(std::vector<cv::KeyPoint>& keypoints1, std::vector<cv::K
 
     cv::BFMatcher matcher(cv::NORM_HAMMING);
     std::vector<std::vector<cv::DMatch>> knn_matches;
-    matcher.knnMatch(descriptors1, descriptors2, knn_matches, k);
+    matcher.knnMatch(descriptors1, descriptors2, knn_matches, options.k);
 
     for (size_t i = 0; i < knn_matches.size(); i++) {
-        if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance) {
+        if (knn_matches[i][0].distance < options.threshold * knn_matches[i][1].distance) {
             good_matches.push_back(knn_matches[i][0]);
         }
     }
 
-    if(VERBOSE){
+    if(options.verbose){
         cv::Mat img_matches;
         cv::drawMatches(img1, keypoints1, img2, keypoints2, good_matches, img_matches);
 
@@ -239,27 +247,36 @@ void performORBMatching(std::vector<cv::KeyPoint>& keypoints1, std::vector<cv::K
 }
 
 
-void sendDataOverOD4(cluon::OD4Session &od4,IntrinsicParameters parameters, int id){
+void sendDataoverOD4(cluon::OD4Session &od4,ExtrinsicParameters parameters){
     calValues msg;
 
-    cv::Mat mtx = parameters.cameraMatrix;
-    cv::Mat dist = parameters.distortionCoefficients;
+    cv::Mat R = parameters.rotationMatrix;
+    cv::Mat T = parameters.translationVector;
 
-    msg.cameraId(id);
-    msg.m00(mtx.row(0).at<double>(0));
-    msg.m01(mtx.row(0).at<double>(1));
-    msg.m02(mtx.row(0).at<double>(2));
-    msg.m10(mtx.row(1).at<double>(0));
-    msg.m11(mtx.row(1).at<double>(1));
-    msg.m12(mtx.row(1).at<double>(2));
-    msg.m20(mtx.row(2).at<double>(0));
-    msg.m21(mtx.row(2).at<double>(1));
-    msg.m22(mtx.row(2).at<double>(2));
-    msg.d0(dist.row(0).at<double>(0));
-    msg.d1(dist.row(0).at<double>(1));
-    msg.d2(dist.row(0).at<double>(2));
-    msg.d3(dist.row(0).at<double>(3));
-    msg.d4(dist.row(0).at<double>(4));
+    std::vector<double> rotation;
+    std::vector<double> translation;
+
+
+    for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++){
+            rotation.push_back(R.row(i).at<double>(j));
+        }
+        translation.push_back(T.row(0).at<double>(i));
+    }
+
+    uint32_t rotationDataLen = rotation.size() * sizeof(double);
+    uint32_t translationDataLen = translation.size() * sizeof(double);
+    
+    std::string rStr(rotationDataLen, ' ');
+    std::string tStr(translationDataLen, ' ');
+    
+
+    ::memcpy(rStr.data(), rotation.data(), rotationDataLen);
+    ::memcpy(tStr.data(), translation.data(), translationDataLen);
+
+    msg.r(rStr);
+    msg.t(tStr);
+
     od4.send(msg);
 }
 
@@ -280,11 +297,11 @@ int main(int argc, char *argv[]) {
         std::vector<cv::KeyPoint> keypoints1, keypoints2;
         std::vector<cv::DMatch> good_matches;
 
-        if (FAST){
-            performORBMatching(keypoints1,keypoints2,img1, img2, args.threshold, good_matches,args.k); 
+        if (args.sift){
+            performSIFTMatching(keypoints1,keypoints2,img1, img2, good_matches,args);
         }
         else{
-            performSIFTMatching(keypoints1,keypoints2,img1, img2, args.threshold, good_matches,args.k);
+            performORBMatching(keypoints1,keypoints2,img1, img2, good_matches,args); 
         }
 
 
@@ -321,6 +338,20 @@ int main(int argc, char *argv[]) {
     std::cout << "Relative Rotation (R):\n" << R << std::endl << std::endl;
     std::cout << "Relative Translation (t):\n" << t << std::endl;
 
+
+    cluon::OD4Session od4(args.od4, [](cluon::data::Envelope &&envelope) noexcept {});
+
+    ExtrinsicParameters exParameters;
+    exParameters.rotationMatrix = R;
+    exParameters.translationVector = t;
+
+    if (args.send){
+        sendDataoverOD4(od4, exParameters);
+    }
+
+    if (!args.writeDest.empty()){
+        writeYAML(args.writeDest, exParameters);
+    }
 
     return 0;
 }
