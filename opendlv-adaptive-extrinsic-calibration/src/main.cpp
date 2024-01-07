@@ -61,7 +61,7 @@ CommandLineOptions parseCommandLine(int argc, char *argv[]) {
         }else if (arg == "-k") {
             options.k = std::stoi(argv[++i]);
         }else if (arg == "-write") {
-            options.writeDest = argv[++i];;
+            options.writeDest = argv[++i];
         }else if (arg == "-od4") {
             options.od4 = std::stoi(argv[++i]);
         }

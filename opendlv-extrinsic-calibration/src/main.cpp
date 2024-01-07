@@ -35,10 +35,13 @@ struct ExtrinsicParameters {
 struct CommandLineOptions {
     std::string dir1;           
     std::string dir2;
+    std::string writeDest;
     cv::Size conv;
     cv::Size checkerBoard;
     int od4;
-    CommandLineOptions() : conv(11, 11), checkerBoard(4, 7), od4(132) {}
+    bool verbose;
+    bool send;
+    CommandLineOptions() : conv(11, 11), checkerBoard(4, 7), od4(132), verbose(false),send(false) {}
 };
 
 
@@ -48,7 +51,7 @@ CommandLineOptions parseCommandLine(int argc, char *argv[]) {
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--verbose") {
-            VERBOSE = true;
+            options.verbose = true;
         }else if (arg == "-checkersize") {
             options.checkerBoard.width = std::stoi(argv[++i]);
             options.checkerBoard.height = std::stoi(argv[++i]);
@@ -63,6 +66,10 @@ CommandLineOptions parseCommandLine(int argc, char *argv[]) {
         }else if (arg == "-conv") {
             options.conv.width = std::stoi(argv[++i]);
             options.conv.height = std::stoi(argv[++i]);             
+        }else if (arg == "-write") {
+            options.writeDest = argv[++i];
+        }else if (arg == "--send") {
+            options.send = true;
         }
     }
     
@@ -184,18 +191,24 @@ std::vector<std::pair<std::string, std::string>> pairImages(const std::string& f
 }
 
 
-ExtrinsicParameters getExtrinsicParameters(IntrinsicParameters parametersLeft, IntrinsicParameters parametersRight,
- std::vector<std::pair<std::string, std::string>> pairedImages, cv::Size checkerBoard, cv::Size conv ){
+ExtrinsicParameters getExtrinsicParameters(CommandLineOptions args){
 
-    cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 100, 0.0001);
+    std::vector<std::pair<std::string, std::string>> pairedImages = pairImages(args.dir1, args.dir2);
+
+    IntrinsicParameters intrinsics1 = readYAML(args.dir1);
+    IntrinsicParameters intrinsics2 = readYAML(args.dir2);
+
+
+
+    cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 1000, 0.0001);
 
     std::vector<std::vector<cv::Point3f>> objPoints;
     std::vector<std::vector<cv::Point2f>> imgPointsLeft;
     std::vector<std::vector<cv::Point2f>> imgPointsRight;
 
     std::vector<cv::Point3f> objp;
-    for (int i{0}; i < checkerBoard.height; i++) {
-        for (int j{0}; j < checkerBoard.width; j++)
+    for (int i{0}; i < args.checkerBoard.height; i++) {
+        for (int j{0}; j < args.checkerBoard.width; j++)
             objp.push_back(cv::Point3f(j, i, 0));
     }
 
@@ -215,23 +228,23 @@ ExtrinsicParameters getExtrinsicParameters(IntrinsicParameters parametersLeft, I
 
         std::vector<cv::Point2f> cornersLeftImg,cornersRightImg;
 
-        bool retLeft = cv::findChessboardCorners(imgLeftGray, checkerBoard, cornersLeftImg);   
-        bool retRight = cv::findChessboardCorners(imgRightGray, checkerBoard, cornersRightImg);
+        bool retLeft = cv::findChessboardCorners(imgLeftGray, args.checkerBoard, cornersLeftImg);   
+        bool retRight = cv::findChessboardCorners(imgRightGray, args.checkerBoard, cornersRightImg);
 
         if (retLeft && retRight) {
 
-            cv::cornerSubPix(imgLeftGray, cornersLeftImg, conv, cv::Size(-1, -1), criteria);
-            cv::cornerSubPix(imgRightGray, cornersRightImg, conv, cv::Size(-1, -1), criteria);
+            cv::cornerSubPix(imgLeftGray, cornersLeftImg, args.conv, cv::Size(-1, -1), criteria);
+            cv::cornerSubPix(imgRightGray, cornersRightImg, args.conv, cv::Size(-1, -1), criteria);
 
             objPoints.push_back(objp);
 
             imgPointsLeft.push_back(cornersLeftImg);
             imgPointsRight.push_back(cornersRightImg);
 
-            if (VERBOSE) {
+            if (args.verbose) {
 
-                cv::drawChessboardCorners(imgLeft, checkerBoard, cornersLeftImg, retLeft);
-                cv::drawChessboardCorners(imgRight, checkerBoard, cornersRightImg, retLeft);
+                cv::drawChessboardCorners(imgLeft, args.checkerBoard, cornersLeftImg, retLeft);
+                cv::drawChessboardCorners(imgRight, args.checkerBoard, cornersRightImg, retLeft);
 
                 cv::resize(imgLeft, imgLeft, cv::Size(800, 800));
                 cv::resize(imgRight, imgRight, cv::Size(800, 800));
@@ -253,14 +266,14 @@ ExtrinsicParameters getExtrinsicParameters(IntrinsicParameters parametersLeft, I
 
     double ret = cv::stereoCalibrate(
         objPoints, imgPointsLeft, imgPointsRight,
-        parametersLeft.cameraMatrix, parametersLeft.distortionCoefficients,
-        parametersRight.cameraMatrix, parametersRight.distortionCoefficients,
+        intrinsics1.cameraMatrix, intrinsics1.distortionCoefficients,
+        intrinsics2.cameraMatrix, intrinsics2.distortionCoefficients,
         imgLeft.size(), R, T, E, F, rvecs, tvecs, perViewErrors, flag, criteria
         );
 
 
 
-    std::cout << "Parameters from camera " << parametersRight.cameraId << " to " << parametersLeft.cameraId << std::endl;
+    std::cout << "Parameters from camera " << intrinsics2.cameraId << " to " << intrinsics1.cameraId << std::endl;
     std::cout << "Rotation Matrix R:\n" << R << "\nTranslation Vector T:\n" << T << std::endl;
     std::cout << "RMSE for stereo calibration:" << ret << std::endl;
 
@@ -305,26 +318,48 @@ void sendDataoverOD4(cluon::OD4Session &od4,ExtrinsicParameters parameters){
 }
 
 
+void writeYAML(const std::string& filename, const ExtrinsicParameters& parameters) {
+    YAML::Node node;
+
+    std::vector<double> rData;
+    cv::Mat RFlattened = parameters.rotationMatrix.reshape(1, 1);
+    rData.assign(RFlattened.begin<double>(), RFlattened.end<double>());
+    node["rotation_matrix"] = rData;
+
+    std::vector<double> tData;
+    cv::Mat TFlattened = parameters.translationVector.reshape(1, 1);
+    tData.assign(TFlattened.begin<double>(), TFlattened.end<double>());
+    node["translation_vector"] = tData;
+
+    try {
+        std::ofstream fout(filename);
+        fout << node;
+        fout.close();
+    } catch (const std::exception& e) {
+        std::cerr << "Error writing YAML file: " << e.what() << std::endl;
+    }
+}
+
+
 
 int main(int argc, char *argv[]) {
 
     CommandLineOptions args = parseCommandLine(argc, argv);
 
-    if (VERBOSE) {
+    if (args.verbose) {
         std::cout << "Verbose mode enabled." << std::endl;
     }
 
-    std::vector<std::pair<std::string, std::string>> pairedImages = pairImages(args.dir1, args.dir2);
+    ExtrinsicParameters exParameters = getExtrinsicParameters(args);
 
-    IntrinsicParameters intrinsics1 = readYAML(args.dir1);
-    IntrinsicParameters intrinsics2 = readYAML(args.dir2);
+    if (args.send){
+        cluon::OD4Session od4(args.od4, [](cluon::data::Envelope &&envelope) noexcept {});
+        sendDataoverOD4(od4, exParameters);
+    }
 
-    ExtrinsicParameters exParameters = getExtrinsicParameters(intrinsics1,intrinsics2,pairedImages,args.checkerBoard,args.conv);
-
-    cluon::OD4Session od4(args.od4, [](cluon::data::Envelope &&envelope) noexcept {});
-
-
-    sendDataoverOD4(od4, exParameters);
+    if (!args.writeDest.empty()){
+        writeYAML(args.writeDest, exParameters);
+    }
 
     return 0;
 }

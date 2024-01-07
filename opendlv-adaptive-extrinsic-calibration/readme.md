@@ -18,24 +18,25 @@ docker run -it --net=host -v /tmp/.X11-unix:/tmp/.X11-unix -v ./data:/data -e DI
 
 ## Command line arguments
 
-`--verbose` Enable verbose mode to display images and wait for a key press before proceeding to the next image.
-`--sift` Use SIFT feature detection. If not specified, ORB feature detection will be used by default.
-`--send` Send the calibration data to the specified od4 channel. If not specified, the program will only output the results.
-`-dir1` Path to the directory containing images from the first camera perspective.
-`-dir2` Path to the directory containing images from the second camera perspective.
-`-threshold` Threshold used for filtering points of interest in images based on knn.
-`-k` Number of neighbors in the knn algorithm.
-`-write` Specify a file path to store the calibration results.
-`-od4` Specify the conference id for Opendlv 
+- `--verbose` Enable verbose mode to display images and wait for a key press before proceeding to the next image.
+- `--sift` Use SIFT feature detection. If not specified, ORB feature detection will be used by default.
+- `--send` Send the calibration data to the specified od4 channel. If not specified, the program will only output the results.
+- `-dir1` Path to the directory containing images from the first camera perspective.
+- `-dir2` Path to the directory containing images from the second camera perspective.
+- `-threshold` Threshold used for filtering points of interest in images based on knn.
+- `-k` Number of neighbors in the knn algorithm.
+- `-write` Specify a file path to store the calibration results (specify the filename as well as the extension for example /data/extrnisc1.yml).
+- `-od4` Specify the conference id for Opendlv 
 
 ## Output
-The tool outputs the normalized translation vector, fundamental matrix, and other calibration details in YAML format. The resulting file can be specified using the -write option.
+The tool outputs the normalized translation vector, and rotation matrix in YAML format. The resulting file can be specified using the -write option.
 
-Note: The translation vector is normalized and provided in relative units, not in metric measurements.
 
 ## Notes
 Ensure that the Docker container has access to the X11 display server for graphical output.
 Adjust volume mount paths and image details according to your setup.
+
+The translation vector is normalized and provided in relative units, not in metric measurements.
 
 Feel free to modify the tool or Dockerfile to suit your specific needs. If you encounter any issues or have suggestions, please refer to the author.
 

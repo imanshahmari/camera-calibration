@@ -13,14 +13,4 @@ RUN mkdir /tmp/build
 RUN cd /tmp/build
 RUN cmake -D CMAKE_BUILD_TYPE=Release /opt/sources
 RUN make
-RUN cp opendlv-logic-imansh /tmp
-
-
-# Deploy .
-FROM alpine:3.7
-RUN apk update
-RUN apk --no-cache add libstdc++
-RUN mkdir /opt
-WORKDIR /opt
-COPY --from=builder /tmp/opendlv-logic-imansh .
-CMD ["/opt/opendlv-logic-imansh"]
+CMD ["./receiver"]
